@@ -5,6 +5,7 @@ import (
 	"fetch-go/utils"
 	"fmt"
 	"sync"
+	"time"
 
 	flag "github.com/spf13/pflag"
 )
@@ -34,6 +35,7 @@ func main() {
 		WG: &sync.WaitGroup{},
 		Input: &fetch.FetchInput{
 			BaseURL: url,
+			Time:    time.Now(),
 		},
 	}
 

@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"encoding/json"
 	"errors"
 	"fetch-go/dom"
 	"fetch-go/utils"
@@ -26,8 +27,9 @@ type Fetch struct {
 // 1. the html response of this base url
 // 2. the content of the static files included in the above html response
 type FetchInput struct {
-	BaseURL string        `json: "url"`
-	Time    time.Duration `json: "time_start"`
+	BaseURL string    `json: "url"`
+	Time    time.Time `json: "ts"`
+
 	// cookie, proxy ???
 }
 
@@ -80,11 +82,12 @@ func (f *StaticFile) GetHashName() error {
 
 type FetchOutput struct {
 	//	Header: output http header?
+	Time       time.Time     `json: "ts"`
 	BaseURL    string        `json: "url"`
 	CSSFiles   []*StaticFile `json: "css"`
 	ImageFiles []*StaticFile `json: "imgs"`
 	JSFiles    []*StaticFile `json: "js"`
-	Body       string        `json: "body"`
+	Body       string        `json: "-"`
 }
 
 func fetchURL(url string) (string, error) {
@@ -150,6 +153,11 @@ func (f *Fetch) FetchALL() error {
 	jsFiles := make([]*StaticFile, len(js))
 	imgFiles := make([]*StaticFile, len(images))
 
+	err = os.MkdirAll(dirName, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	f.fulFill(cssFiles, css, dirName)
 	f.fulFill(imgFiles, images, dirName)
 
@@ -159,6 +167,7 @@ func (f *Fetch) FetchALL() error {
 		ImageFiles: imgFiles,
 		JSFiles:    jsFiles,
 		Body:       content,
+		Time:       time.Now(),
 	}
 
 	return nil
@@ -169,11 +178,6 @@ func (f *Fetch) SavePage() error {
 	out := f.Output
 	dirName := utils.GetDirName(out.BaseURL)
 	fileName := utils.GetFileName()
-
-	err := os.MkdirAll(dirName, os.ModePerm)
-	if err != nil {
-		return err
-	}
 
 	// save static file first
 	// then rewrite the links to local file system
@@ -191,5 +195,14 @@ func (f *Fetch) SavePage() error {
 
 	// and save
 	utils.SaveFile(dirName, fileName, rewritedOutPut)
+
+	// save metadata.json
+	toJson, err := json.Marshal(f)
+	if err != nil {
+		fmt.Println("to json err")
+		return err
+	}
+
+	utils.SaveFile(dirName, "metadata.json", string(toJson))
 	return nil
 }
