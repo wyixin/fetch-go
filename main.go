@@ -28,21 +28,37 @@ func main() {
 	// fetch and save date from above links
 	// rewrite links to suitable for local file system
 	// save the rewited content to index.html file
-	url := validURLs[0]
 
-	instance := fetch.Fetch{
-		WG: &sync.WaitGroup{},
-		Input: &fetch.FetchInput{
-			BaseURL: url,
-			Time:    time.Now(),
-		},
+	var wg sync.WaitGroup
+
+	for _, url := range validURLs {
+
+		url := url
+
+		instance := fetch.Fetch{
+			WG: &sync.WaitGroup{},
+			Input: &fetch.FetchInput{
+				BaseURL: url,
+				Time:    time.Now(),
+			},
+		}
+
+		if printMetadata {
+			instance.MPrint()
+		} else {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+
+				instance.FetchALL()
+				instance.SavePage()
+				instance.Wait()
+			}()
+
+		}
 	}
 
-	if printMetadata == true {
-		instance.MPrint()
-	} else {
-		instance.FetchALL()
-		instance.SavePage()
-		instance.Wait()
+	if !printMetadata {
+		wg.Wait()
 	}
 }
