@@ -3,7 +3,6 @@ package main
 import (
 	"fetch-go/fetch"
 	"fetch-go/utils"
-	"fmt"
 	"sync"
 	"time"
 
@@ -22,8 +21,8 @@ func main() {
 	args := flag.Args()
 	validURLs = utils.ParseURI(args)
 
-	fmt.Println("metadata?", printMetadata)
-	fmt.Println(validURLs)
+	//	fmt.Println("metadata?", printMetadata)
+	//	fmt.Println(validURLs)
 
 	// extract links from content
 	// fetch and save date from above links
@@ -39,9 +38,11 @@ func main() {
 		},
 	}
 
-	instance.FetchALL()
-
-	// fmt.Println("Fetched content:", output)
-	instance.SavePage()
-	instance.Wait()
+	if printMetadata == true {
+		instance.MPrint()
+	} else {
+		instance.FetchALL()
+		instance.SavePage()
+		instance.Wait()
+	}
 }

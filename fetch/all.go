@@ -27,15 +27,15 @@ type Fetch struct {
 // 1. the html response of this base url
 // 2. the content of the static files included in the above html response
 type FetchInput struct {
-	BaseURL string    `json: "url"`
-	Time    time.Time `json: "ts"`
+	BaseURL string    `json:"url"`
+	Time    time.Time `json:"ts"`
 
 	// cookie, proxy ???
 }
 
 type StaticFile struct {
-	BaseURL  string `json: "url"`
-	HashName string `json: "hash_name"`
+	BaseURL  string `json:"url"`
+	HashName string `json:"hash_name"`
 }
 
 func (f *StaticFile) DownLoadTo(dirName string) (err error) {
@@ -82,12 +82,12 @@ func (f *StaticFile) GetHashName() error {
 
 type FetchOutput struct {
 	//	Header: output http header?
-	Time       time.Time     `json: "ts"`
-	BaseURL    string        `json: "url"`
-	CSSFiles   []*StaticFile `json: "css"`
-	ImageFiles []*StaticFile `json: "imgs"`
-	JSFiles    []*StaticFile `json: "js"`
-	Body       string        `json: "-"`
+	Time       time.Time     `json:"ts"`
+	BaseURL    string        `json:"url"`
+	CSSFiles   []*StaticFile `json:"css"`
+	ImageFiles []*StaticFile `json:"imgs"`
+	JSFiles    []*StaticFile `json:"js"`
+	Body       string        `json:"-"`
 }
 
 func fetchURL(url string) (string, error) {
@@ -204,5 +204,29 @@ func (f *Fetch) SavePage() error {
 	}
 
 	utils.SaveFile(dirName, "metadata.json", string(toJson))
+	return nil
+}
+
+func (f *Fetch) MPrint() error {
+	dirName := utils.GetDirName(f.Input.BaseURL)
+	filePath := dirName + "/" + "metadata.json"
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		//		fmt.Println("Error decoding JSON:", err)
+		fmt.Println("URL IS NOT REQUESTED YET")
+		return err
+	}
+
+	err = json.Unmarshal(data, f)
+	if err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return err
+	}
+
+	fmt.Println("Request URL is:", f.Input.BaseURL)
+	fmt.Println("Last request time is:", f.Output.Time)
+	fmt.Println("CSS File Downloaded:", len(f.Output.CSSFiles))
+	fmt.Println("Images Downloaded:", len(f.Output.ImageFiles))
 	return nil
 }
