@@ -16,7 +16,9 @@ import (
 )
 
 type Fetch struct {
-	WG *sync.WaitGroup
+	WG     *sync.WaitGroup
+	Input  *FetchInput
+	Output *FetchOutput
 }
 
 // input base url
@@ -127,20 +129,21 @@ func (f *Fetch) Wait() {
 	f.WG.Wait()
 }
 
-func (f *Fetch) FetchALL(in *FetchInput) (*FetchOutput, error) {
+func (f *Fetch) FetchALL() error {
 
+	in := f.Input
 	dirName := utils.GetDirName(in.BaseURL)
 	content, err := fetchURL(in.BaseURL)
 
 	if err != nil {
 		fmt.Println("Error fetching URL:", err)
-		return nil, err
+		return err
 	}
 
 	images, js, css, err := dom.ParseAllAssets(content)
 	if err != nil {
 		fmt.Println("Error on parse document string:", err)
-		return nil, err
+		return err
 	}
 
 	cssFiles := make([]*StaticFile, len(css))
@@ -150,17 +153,20 @@ func (f *Fetch) FetchALL(in *FetchInput) (*FetchOutput, error) {
 	f.fulFill(cssFiles, css, dirName)
 	f.fulFill(imgFiles, images, dirName)
 
-	return &FetchOutput{
+	f.Output = &FetchOutput{
 		BaseURL:    in.BaseURL,
 		CSSFiles:   cssFiles,
 		ImageFiles: imgFiles,
 		JSFiles:    jsFiles,
 		Body:       content,
-	}, nil
+	}
+
+	return nil
 }
 
-func (f *Fetch) SavePage(out *FetchOutput) error {
+func (f *Fetch) SavePage() error {
 
+	out := f.Output
 	dirName := utils.GetDirName(out.BaseURL)
 	fileName := utils.GetFileName()
 

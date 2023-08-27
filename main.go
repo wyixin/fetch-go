@@ -29,17 +29,17 @@ func main() {
 	// rewrite links to suitable for local file system
 	// save the rewited content to index.html file
 	url := validURLs[0]
-	input := &fetch.FetchInput{
-		BaseURL: url,
-	}
 
 	instance := fetch.Fetch{
 		WG: &sync.WaitGroup{},
+		Input: &fetch.FetchInput{
+			BaseURL: url,
+		},
 	}
 
-	output, _ := instance.FetchALL(input)
+	instance.FetchALL()
 
 	// fmt.Println("Fetched content:", output)
-	instance.SavePage(output)
+	instance.SavePage()
 	instance.Wait()
 }
