@@ -8,7 +8,4 @@ RUN go mod download
 COPY . /app
 RUN go build -o ./bin/fetch main.go
 
-
-EXPOSE 5500
-USER nobody
 ENTRYPOINT ["./bin/fetch"]
