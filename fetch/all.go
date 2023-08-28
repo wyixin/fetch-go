@@ -44,7 +44,7 @@ func (f *StaticFile) DownLoadTo(dirName string) (err error) {
 	}
 
 	filepath := dirName + "/" + f.HashName
-	fmt.Println(filepath)
+
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -120,8 +120,7 @@ func (f *Fetch) fulFill(files []*StaticFile, urls []string, dirName string) {
 
 		go func() {
 			defer f.WG.Done()
-			err := static.DownLoadTo(dirName)
-			fmt.Println(err)
+			static.DownLoadTo(dirName)
 		}()
 
 		files[k] = static
