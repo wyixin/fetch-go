@@ -38,12 +38,12 @@ type StaticFile struct {
 	HashName string `json:"hash_name"`
 }
 
-func (f *StaticFile) DownLoadTo(dirName string) (err error) {
+func (f *StaticFile) DownloadTo(dirName string) error {
 	if f.BaseURL == "" {
 		return errors.New("baseurl empty!")
 	}
 
-	filepath := dirName + "/" + f.HashName
+	filepath := filepath.Join(dirName, f.HashName)
 
 	// Create the file
 	out, err := os.Create(filepath)
@@ -120,7 +120,7 @@ func (f *Fetch) fulFill(files []*StaticFile, urls []string, dirName string) {
 
 		go func() {
 			defer f.WG.Done()
-			static.DownLoadTo(dirName)
+			static.DownloadTo(dirName)
 		}()
 
 		files[k] = static
